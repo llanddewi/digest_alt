@@ -287,7 +287,18 @@
 					"plaintext_message" => $plaintext_message
 				);
 				
-				if(html_email_handler_send_email($options)){
+				$html_email_handler = elgg_is_active_plugin("html_email_handler");
+				$phpmailer = elgg_is_active_plugin("phpmailer");
+				if ($html_email_handler) {
+					$done = html_email_handler_send_email($options);
+				} elseif ($phpmailer) {
+					$fromemail = $CONFIG->site->email;
+					$fromname = $CONFIG->site->name;
+					$done = phpmailer_send($fromemail, $fromname, $user->email, $user->name, $subject, $html_body, NULL, true, NULL, NULL);
+				} else {
+					$done = false;
+				}
+				if($done){
 					if(empty($digest_mail_send)){
 						$digest_mail_send = 1;
 					} else {
@@ -472,4 +483,40 @@
 			// only let this happen once
 			$run_once = true;
 		}
+	}
+	
+	if (!function_exists('html_email_handler_css_inliner')) {
+		function html_email_handler_css_inliner($html_text){
+			$result = false;
+			
+			if(!empty($html_text) && defined("XML_DOCUMENT_NODE")){
+				$css = "";
+				
+				// set custom error handling
+				libxml_use_internal_errors(true);
+				
+				$dom = new DOMDocument();
+				$dom->loadHTML($html_text);
+				
+				$styles = $dom->getElementsByTagName("style");
+				
+				if(!empty($styles)){
+					$style_count = $styles->length;
+					
+					for($i = 0; $i < $style_count; $i++){
+						$css .= $styles->item($i)->nodeValue;
+					}
+				}
+				
+				// clear error log
+				libxml_clear_errors();
+				
+				elgg_load_library("emogrifier");
+				
+				$emo = new Emogrifier($html_text, $css);
+				$result = $emo->emogrify();
+			}
+			
+			return $result;
+		}	
 	}
