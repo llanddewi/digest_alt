@@ -14,8 +14,11 @@
 	require_once(dirname(__FILE__) . "/lib/hooks.php");
 	
 	function digest_init(){
-		// this plugin require the plugin 'html_email_handler'
-		if(!is_plugin_enabled("html_email_handler")){
+		// this plugin prefers the 'html_email_handler' plugin
+		// 'phpmailer' if 'html_email_handler' is unavailable
+		$html_email_handler = elgg_is_active_plugin("html_email_handler");
+		$phpmailer = elgg_is_active_plugin("phpmailer");
+		if(!$html_email_handler && !$phpmailer){
 			disable_plugin("digest");
 			system_message(elgg_echo("digest:init:plugin_required:html_email_handler"));
 			forward();
@@ -25,24 +28,24 @@
 		elgg_extend_view("css", "digest/css");
 		
 		// register page handler for nice url's
-		register_page_handler("digest", "digest_page_handler");
+		elgg_register_page_handler("digest", "digest_page_handler");
 		
 		// extend register with subscribe option
-		$setting = get_plugin_setting("site_default", "digest");
+		$setting = elgg_get_plugin_setting("site_default", "digest");
 		
 		if(!empty($setting) && ($setting != DIGEST_INTERVAL_NONE)){
 			elgg_extend_view("register/extend", "digest/register");
 			
-			register_elgg_event_handler("create", "user", "digest_create_user_event_handler");
+			elgg_register_event_handler("create", "user", "digest_create_user_event_handler");
 		}
 	}
 	
 	function digest_pagesetup(){
 		global $CONFIG;
 		
-		$context = get_context();
+		$context = elgg_get_context();
 		
-		if(isloggedin()){
+		if(elgg_is_logged_in()){
 			// extend groups edit screen
 			if(($context == "groups") && digest_group_enabled()){
 				elgg_extend_view("forms/groups/edit", "digest/groupsettings/form", 400);
@@ -56,8 +59,8 @@
 				add_submenu_item(elgg_echo("digest:submenu:usersettings"), $CONFIG->wwwroot . "pg/digest/user/" . get_loggedin_user()->username);
 			}
 			
-			if($context == "admin" && isadminloggedin()){
-				add_submenu_item(elgg_echo("digest:submenu:analysis"), $CONFIG->wwwroot . "pg/digest/analysis/");
+			if($context == "admin" && elgg_is_admin_logged_in()){
+				elgg_register_menu_item(elgg_echo("digest:submenu:analysis"), $CONFIG->wwwroot . "pg/digest/analysis/");
 			}
 		}
 	}
@@ -88,18 +91,18 @@
 	}
 	
 	// register elgg events
-	register_elgg_event_handler("init", "system", "digest_init");
-	register_elgg_event_handler("pagesetup", "system", "digest_pagesetup");
+	elgg_register_event_handler("init", "system", "digest_init");
+	elgg_register_event_handler("pagesetup", "system", "digest_pagesetup");
 
 	// register cron events
-	register_plugin_hook("cron", "daily", "digest_cron_handler");
-	register_plugin_hook("cron", "weekly", "digest_cron_handler");
-	register_plugin_hook("cron", "monthly", "digest_cron_handler");
+	elgg_register_plugin_hook_handler("cron", "daily", "digest_cron_handler");
+	elgg_register_plugin_hook_handler("cron", "weekly", "digest_cron_handler");
+	elgg_register_plugin_hook_handler("cron", "monthly", "digest_cron_handler");
 	
 	// register on group leave
-	register_elgg_event_handler("leave", "group", "digest_group_leave_event");
+	elgg_register_event_handler("leave", "group", "digest_group_leave_event");
 	
 	// register actions
-	register_action("digest/update/usersettings", false, dirname(__FILE__) . "/actions/update/usersettings.php");
-	register_action("digest/update/groupsettings", false, dirname(__FILE__) . "/actions/update/groupsettings.php");
+	elgg_register_action("digest/update/usersettings", false, dirname(__FILE__) . "/actions/update/usersettings.php");
+	elgg_register_action("digest/update/groupsettings", false, dirname(__FILE__) . "/actions/update/groupsettings.php");
 	
