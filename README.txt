@@ -1,6 +1,10 @@
 = Digest =
 Send out a digest to your users
 
+Original plugin by ColdTrick.
+This version does not require the html_email_handler plugin. It uses elgg's email event handler.
+The phpmailer plugin is recommended, as it allows for HTML mails to be sent. Elgg's default email functions do not send HTML mail.
+
 == Contents ==
 
 1. Features
