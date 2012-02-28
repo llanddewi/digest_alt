@@ -265,12 +265,13 @@
 		if(!empty($user) && ($user instanceof ElggUser) && !empty($subject) && !empty($html_body)){
 			// convert css
 			if(defined("XML_DOCUMENT_NODE")){
-				if($transform = html_email_handler_css_inliner($html_body)){
+				if($transform = css_inliner($html_body)){
 					$html_body = $transform;
 				}
 			}
 			
 			// email settings
+			$from = $CONFIG->site->name . " <" . $CONFIG->site->email . ">";
 			$to = $user->name . " <" . $user->email . ">";
 			
 			if(!empty($plain_link)){
@@ -287,17 +288,9 @@
 					"plaintext_message" => $plaintext_message
 				);
 				
-				$html_email_handler = elgg_is_active_plugin("html_email_handler");
-				$phpmailer = elgg_is_active_plugin("phpmailer");
-				if ($html_email_handler) {
-					$done = html_email_handler_send_email($options);
-				} elseif ($phpmailer) {
-					$fromemail = $CONFIG->site->email;
-					$fromname = $CONFIG->site->name;
-					$done = phpmailer_send($fromemail, $fromname, $user->email, $user->name, $subject, $html_body, NULL, true, NULL, NULL);
-				} else {
-					$done = false;
-				}
+				$rest = array("html" => true);	
+				$done = elgg_send_email ($from, $to, $subject, $html_body, $rest);
+				
 				if($done){
 					if(empty($digest_mail_send)){
 						$digest_mail_send = 1;
@@ -485,38 +478,37 @@
 		}
 	}
 	
-	if (!function_exists('html_email_handler_css_inliner')) {
-		function html_email_handler_css_inliner($html_text){
-			$result = false;
+
+	function css_inliner($html_text){
+		$result = false;
+		
+		if(!empty($html_text) && defined("XML_DOCUMENT_NODE")){
+			$css = "";
 			
-			if(!empty($html_text) && defined("XML_DOCUMENT_NODE")){
-				$css = "";
+			// set custom error handling
+			libxml_use_internal_errors(true);
+			
+			$dom = new DOMDocument();
+			$dom->loadHTML($html_text);
+			
+			$styles = $dom->getElementsByTagName("style");
+			
+			if(!empty($styles)){
+				$style_count = $styles->length;
 				
-				// set custom error handling
-				libxml_use_internal_errors(true);
-				
-				$dom = new DOMDocument();
-				$dom->loadHTML($html_text);
-				
-				$styles = $dom->getElementsByTagName("style");
-				
-				if(!empty($styles)){
-					$style_count = $styles->length;
-					
-					for($i = 0; $i < $style_count; $i++){
-						$css .= $styles->item($i)->nodeValue;
-					}
+				for($i = 0; $i < $style_count; $i++){
+					$css .= $styles->item($i)->nodeValue;
 				}
-				
-				// clear error log
-				libxml_clear_errors();
-				
-				elgg_load_library("emogrifier");
-				
-				$emo = new Emogrifier($html_text, $css);
-				$result = $emo->emogrify();
 			}
 			
-			return $result;
-		}	
+			// clear error log
+			libxml_clear_errors();
+			
+			elgg_load_library("emogrifier");
+			
+			$emo = new Emogrifier($html_text, $css);
+			$result = $emo->emogrify();
+		}
+		
+		return $result;
 	}
