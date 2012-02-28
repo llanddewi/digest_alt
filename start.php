@@ -14,16 +14,6 @@
 	require_once(dirname(__FILE__) . "/lib/hooks.php");
 	
 	function digest_init(){
-		// this plugin prefers the 'html_email_handler' plugin
-		// 'phpmailer' if 'html_email_handler' is unavailable
-		$html_email_handler = elgg_is_active_plugin("html_email_handler");
-		$phpmailer = elgg_is_active_plugin("phpmailer");
-		if(!$html_email_handler && !$phpmailer){
-			disable_plugin("digest");
-			system_message(elgg_echo("digest:init:plugin_required:html_email_handler"));
-			forward();
-		}
-		
 		// extend css
 		elgg_extend_view("css", "digest/css");
 		
