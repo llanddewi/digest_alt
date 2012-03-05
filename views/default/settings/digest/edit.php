@@ -24,14 +24,14 @@
 	<div>
 		<?php 
 			echo elgg_echo("digest:settings:production:option"); 
-			echo "&nbsp;" . elgg_view("input/pulldown", array("internalname" => "params[in_production]", "options_values" => $noyes_options, "value" => $plugin->in_production));
+			echo "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[in_production]", "options_values" => $noyes_options, "value" => $plugin->in_production));
 		?>
 	</div>
 	
 	<div>
 		<?php 
 			echo elgg_echo("digest:settings:production:group_option"); 
-			echo "&nbsp;" . elgg_view("input/pulldown", array("internalname" => "params[group_production]", "options_values" => $noyes_options, "value" => $plugin->group_production));
+			echo "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[group_production]", "options_values" => $noyes_options, "value" => $plugin->group_production));
 		?>
 	</div>
 
@@ -39,14 +39,14 @@
 	<div>
 		<?php 
 			echo elgg_echo("digest:settings:interval:site_default"); 
-			echo "&nbsp;" . elgg_view("input/pulldown", array("internalname" => "params[site_default]", "options_values" => $interval_options, "value" => $plugin->site_default));
+			echo "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[site_default]", "options_values" => $interval_options, "value" => $plugin->site_default));
 		?>
 	</div>
 	
 	<div>
 		<?php 
 			echo elgg_echo("digest:settings:interval:group_default"); 
-			echo "&nbsp;" . elgg_view("input/pulldown", array("internalname" => "params[group_default]", "options_values" => $interval_options, "value" => $plugin->group_default));
+			echo "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[group_default]", "options_values" => $interval_options, "value" => $plugin->group_default));
 		?>
 	</div>
 	
@@ -57,7 +57,7 @@
 	<div>
 		<?php 
 			echo elgg_echo("digest:settings:never:include");
-			echo "&nbsp;" . elgg_view("input/pulldown", array("internalname" => "params[include_never_logged_in]", "options_values" => $noyes_options, "value" => $plugin->include_never_logged_in));
+			echo "&nbsp;" . elgg_view("input/dropdown", array("name" => "params[include_never_logged_in]", "options_values" => $noyes_options, "value" => $plugin->include_never_logged_in));
 		?>
 	</div>
 </div>
