@@ -14,21 +14,14 @@
 	require_once(dirname(__FILE__) . "/lib/hooks.php");
 	
 	function digest_init(){
-		// this plugin prefers the 'html_email_handler' plugin
-		// 'phpmailer' if 'html_email_handler' is unavailable
-		$html_email_handler = elgg_is_active_plugin("html_email_handler");
-		$phpmailer = elgg_is_active_plugin("phpmailer");
-		if(!$html_email_handler && !$phpmailer){
-			disable_plugin("digest");
-			system_message(elgg_echo("digest:init:plugin_required:html_email_handler"));
-			forward();
-		}
-		
 		// extend css
 		elgg_extend_view("css", "digest/css");
 		
 		// register page handler for nice url's
 		elgg_register_page_handler("digest", "digest_page_handler");
+		
+		// for webmail-friendly HTML mails, register the emogrifier library
+		elgg_register_library("emogrifier", dirname(__FILE__) . "/vendors/emogrifier/emogrifier.php");
 		
 		// extend register with subscribe option
 		$setting = elgg_get_plugin_setting("site_default", "digest");
@@ -56,7 +49,7 @@
 			}
 			
 			if($context == "settings"){
-				add_submenu_item(elgg_echo("digest:submenu:usersettings"), $CONFIG->wwwroot . "pg/digest/user/" . get_loggedin_user()->username);
+				elgg_register_menu_item(elgg_echo("digest:submenu:usersettings"), $CONFIG->wwwroot . "pg/digest/user/" . elgg_get_logged_in_user_entity()->username);
 			}
 			
 			if($context == "admin" && elgg_is_admin_logged_in()){
