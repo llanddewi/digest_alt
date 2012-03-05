@@ -2,7 +2,7 @@
 
 	global $CONFIG;
 	
-	$user = get_loggedin_user();
+	$user = elgg_get_logged_in_user_entity();
 
 	$ts_lower = sanitise_int($vars["ts_lower"]);
 	$ts_upper = sanitise_int($vars["ts_upper"]);
@@ -15,7 +15,7 @@
 	
 	// Friends activity section
 	// retrieve recent friends activity
-	if($river_items = get_river_items($user->getGUID(), 0, 'friend', '', '', '', 5, 0, $ts_lower, $ts_upper)){
+	if($river_items = elgg_get_river(array($user->getGUID(), 0, 'friend', '', '', '', 5, 0, $ts_lower, $ts_upper))){
 		echo "<h2>" . elgg_echo("content:latest") . "</h2>";
 		
 		echo "<div id='digest_river_item_list' class='river_item_list'>";
@@ -37,7 +37,7 @@
 	// end Friends activity section
 	
 	// latest blogs
-	if(is_plugin_enabled("blog")){
+	if(elgg_is_active_plugin("blog")){
 		$blog_options = array(
 			"type" => "object",
 			"subtype" => "blog",
@@ -67,7 +67,7 @@
 
 	// New Groups and users section
 	// Groups
-	if(is_plugin_enabled("groups")){
+	if(elgg_is_active_plugin("groups")){
 		$group_items = "";
 		
 		$group_options = array(
@@ -87,7 +87,7 @@
 				}
 				
 				$group_items .= "<td><a href='" . $group_url . "'>";
-				$group_items .= "<img src='" . $group->getIcon("small") . "' border='0' title='" . $group->$name . "'/>";
+				$group_items .= "<img src='" . $group->getIconURL("small") . "' border='0' title='" . $group->$name . "'/>";
 				$group_items .= "</a> <a href='" . $group_url . "'>" . $group->name . "</a></td>";
 				
 				if(!(($index + 1 ) % 2)){
@@ -109,7 +109,7 @@
 	}
 	
 	// users
-	if(is_plugin_enabled("profile")){
+	if(elgg_is_active_plugin("profile")){
 		$member_items = "";
 		
 		$member_options = array(
@@ -125,12 +125,12 @@
 			$member_items .= "<table>";
 			foreach($newest_members as $index => $mem){
 				$mem_url = $mem->getURL();
-				
+				$mem_img = $mem->getIconURL("small");
 				if(($index + 1 ) % 2){
 					$member_items .= "<tr>";
 				}
 
-				$member_items .= "<td><a href='" . $mem_url . "'>" . elgg_view("profile/icon",array('entity' => $mem, 'size' => 'small', 'override' => true)) . "</a> <a href='" . $mem_url . "'>" . $mem->name . "</a></td>";
+				$member_items .= "<td><a href='" . $mem_url . "'><img src='" . $mem_img . "'/></a> <a href='" . $mem_url . "'>" . $mem->name . "</a></td>";
 				
 				if(!(($index + 1 ) % 2)){
 					$member_items .= "</tr>"; 
@@ -144,7 +144,7 @@
 		}
 		
 		if(!empty($member_items)){
-			if(is_plugin_enabled("riverdashboard")){
+			if(elgg_is_active_plugin("riverdashboard")){
 				echo "<h2><a href='" . $vars["url"] . "'>" . elgg_echo("riverdashboard:recentmembers") . "</a></h2>";
 			} else {
 				echo "<h2><a href='" . $vars["url"] . "'>" . elgg_echo("item:user") . "</a></h2>";
