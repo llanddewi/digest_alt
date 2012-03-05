@@ -265,12 +265,13 @@
 		if(!empty($user) && ($user instanceof ElggUser) && !empty($subject) && !empty($html_body)){
 			// convert css
 			if(defined("XML_DOCUMENT_NODE")){
-				if($transform = html_email_handler_css_inliner($html_body)){
+				if($transform = css_inliner($html_body)){
 					$html_body = $transform;
 				}
 			}
 			
 			// email settings
+			$from = $CONFIG->site->name . " <" . $CONFIG->site->email . ">";
 			$to = $user->name . " <" . $user->email . ">";
 			
 			if(!empty($plain_link)){
@@ -287,7 +288,10 @@
 					"plaintext_message" => $plaintext_message
 				);
 				
-				if(html_email_handler_send_email($options)){
+				$rest = array("html" => true);	
+				$done = elgg_send_email ($CONFIG->site->email, $user->email, $subject, $html_body, $rest);
+				
+				if($done){
 					if(empty($digest_mail_send)){
 						$digest_mail_send = 1;
 					} else {
@@ -450,10 +454,10 @@
 		
 		if(!isset($run_once) || ($refresh === true)){
 			// undo likes extension
-			unregister_elgg_event_handler("pagesetup", "system", "likes_setup");
+			elgg_unregister_event_handler("pagesetup", "system", "likes_setup");
 			
 			// undo river_comments extensions
-			unregister_elgg_event_handler("pagesetup", "system", "river_comments_setup");
+			elgg_unregister_event_handler("pagesetup", "system", "river_comments_setup");
 			
 			// undo more extensions
 			// trigger pagesetup
@@ -472,4 +476,39 @@
 			// only let this happen once
 			$run_once = true;
 		}
+	}
+	
+
+	function css_inliner($html_text){
+		$result = false;
+		
+		if(!empty($html_text) && defined("XML_DOCUMENT_NODE")){
+			$css = "";
+			
+			// set custom error handling
+			libxml_use_internal_errors(true);
+			
+			$dom = new DOMDocument();
+			$dom->loadHTML($html_text);
+			
+			$styles = $dom->getElementsByTagName("style");
+			
+			if(!empty($styles)){
+				$style_count = $styles->length;
+				
+				for($i = 0; $i < $style_count; $i++){
+					$css .= $styles->item($i)->nodeValue;
+				}
+			}
+			
+			// clear error log
+			libxml_clear_errors();
+			
+			elgg_load_library("emogrifier");
+			
+			$emo = new Emogrifier($html_text, $css);
+			$result = $emo->emogrify();
+		}
+		
+		return $result;
 	}
