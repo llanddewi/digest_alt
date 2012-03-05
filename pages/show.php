@@ -34,7 +34,7 @@
 		}
 	
 		if(!empty($data)){
-			echo elgg_view_layout("digest", $title_text, $data);
+			echo elgg_view_layout("digest", array($title_text, $data));
 		} else {
 			system_message(elgg_echo("digest:show:no_data"));
 			forward();
